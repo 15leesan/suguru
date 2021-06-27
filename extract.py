@@ -1,8 +1,7 @@
 import cv2
 import numpy as np
-from PIL import Image
+from fpp.fpp import four_point_transform
 
-# CONST_IMAGE_PATH = "in3.jpg"
 CONST_COEFF = 0.02
 
 
@@ -23,7 +22,7 @@ def get_major_contour(original_image: np.ndarray):
     for i, line in enumerate(k):
         for j, char in enumerate(line):
             kernel[i][j] = int(char)
-
+    
     dilated = cv2.dilate(img, kernel)
     # cv2.imshow("Dilated", dilated)
     (contours, _) = cv2.findContours(dilated.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -36,17 +35,17 @@ def get_major_contour(original_image: np.ndarray):
         perimeter = cv2.arcLength(contour, True)
         approx = cv2.approxPolyDP(contour, CONST_COEFF * perimeter, True)
         if len(approx == 4): break
-        
+    
     screenCnt = approx
     maxPerimeter = perimeter
     return screenCnt, maxPerimeter
 
-from fpp.fpp import four_point_transform
 
 def get_with_camera():
     cam = cv2.VideoCapture(0)
     img_counter = 0
     transformed = None
+    focus = 5
     while True:
         ret, frame = cam.read()
         if not ret:
@@ -61,25 +60,35 @@ def get_with_camera():
             to_width, to_height = (600, round(width / height * 600))
         im = cv2.resize(frame, (to_width, to_height), interpolation=cv2.INTER_CUBIC)
         contour, perimeter = get_major_contour(im)
-        cv2.drawContours(im, [contour], -1, (0, 255, 0), 3)
-        cv2.imshow("Camera [live]", im)
-
         points = []
         for i in contour:
             points.append(i[0])
         points = np.array(points)
         out = four_point_transform(im, points)
+        out = cv2.resize(out, (out.shape[0], out.shape[0]), interpolation=cv2.INTER_CUBIC)
+        
+        cv2.drawContours(im, [contour], -1, (0, 255, 0), 3)
+        cv2.imshow("Camera [live]", im)
+        
         cv2.imshow(f"Transformed", out)
         k = cv2.waitKey(1)
         if k % 256 == 32:
             # SPACE pressed
             transformed = out
             break
+        if k == 119:
+            focus += 5
+        elif k == 115:
+            focus -= 5
+        if focus < 0: focus = 0
+        if focus > 255: focus = 255
+        cam.set(28, focus)
 
     cam.release()
     cv2.destroyAllWindows()
     
-    cv2.imwrite("target.png", transformed)
+    return transformed
+
 
 if __name__ == "__main__":
     get_with_camera()
