@@ -243,21 +243,34 @@ def solve(blocks, starters):
 
 if __name__ == '__main__':
     test_blocks = [
-        "111122",
-        "334122",
-        "344452",
-        "364555",
-        "366758",
-        "668888"
+        "112233",
+        "111224",
+        "567724",
+        "566774",
+        "556874",
+        "588884"
     ]
 
-    test_starters = {}
-    test_starters[(0, 1)] = 2
-    test_starters[(1, 4)] = 4
-    test_starters[(1, 5)] = 1
-    test_starters[(2, 0)] = 5
-    test_starters[(3, 5)] = 3
-    test_starters[(4, 0)] = 1
-    test_starters[(5, 4)] = 5
+    test_starters = { (1, 0):5, (3, 0):3, (1, 2):3, (5, 2):2, (3, 3):2 }
+    
+    # test_blocks = [
+    #     "111122",
+    #     "334122",
+    #     "344452",
+    #     "364555",
+    #     "366758",
+    #     "668888"
+    # ]
+    #
+    # test_starters = {}
+    # test_starters[(0, 1)] = 2
+    # test_starters[(1, 4)] = 4
+    # test_starters[(1, 5)] = 1
+    # test_starters[(2, 0)] = 5
+    # test_starters[(3, 5)] = 3
+    # test_starters[(4, 0)] = 1
+    # test_starters[(5, 4)] = 5
+    #
+    #
     
     solve(test_blocks, test_starters)
