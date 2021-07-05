@@ -12,6 +12,8 @@ For more information, or to have a go yourself, you can use [Krazydad's interact
 
 This is a program designed to solve suguru puzzles, (in an ideal run) nearly fully automatic, using an attached camera. It uses logical rules to eliminate possibilities in cells, but falls back to a recursive backtracking brute-force solver once it detects that no further progress can be made without guessing.
 
+You are free to use this program as part of something else without restriction, though linking to this repo would be appreciated.
+
 ## Setup
 
 1. Install [Tesseract OCR](https://github.com/tesseract-ocr/tesseract) on your system, ensuring that it can be run with the `tesseract` command, or noting down the installation path otherwise
