@@ -28,10 +28,12 @@ if __name__ == '__main__':
         set_threshold(threshold)
 
     passthrough_blocks = blocks.splitlines()
+    passthrough_blocks = [[int(i) for i in line.split(".")] for line in passthrough_blocks]
     thicks = get_thick_lines()
     set_block(passthrough_blocks)
     cv2.destroyWindow("Lines")
     print(blocks)
+    print(passthrough_blocks)
     
     # set_starters_grid_size(grid_x, grid_y)
     starters = show_parts("target.png", grid_x, grid_y)

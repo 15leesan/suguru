@@ -151,7 +151,7 @@ def get_block_shapes(path):
             draw.ellipse([pos[0] - 5, pos[1] - 5, pos[0] + 5, pos[1] + 5], fill=color)
             text_map[y].append(str(block_no + 1))
     
-    text = "\n".join(["".join(line) for line in text_map])
+    text = "\n".join([".".join(line) for line in text_map])
     im.save("lines.png")
     
     return text

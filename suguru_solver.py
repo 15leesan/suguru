@@ -5,10 +5,10 @@ import colorsys
 from functools import cache
 from random import shuffle, seed
 from pprint import pprint
+import brute_strength_solve
 from typing import Tuple, List, Set, Dict
 
 Coordinate = Tuple[int, int]
-GUESSING_ENABLED = False
 
 
 def solve(blocks, starters):
@@ -19,7 +19,7 @@ def solve(blocks, starters):
         l = []
         for y in range(height):
             for x in range(width):
-                if blocks[y][x] == str(index):
+                if blocks[y][x] == index:
                     l.append((x, y))
         return l
     
@@ -199,8 +199,7 @@ def solve(blocks, starters):
             grid[y][x]["possible"] = {k for k in grid[y][x]["possible"] if k <= size}
 
     old_grid = copy_grid()
-    if GUESSING_ENABLED:
-        guesses_stack = []
+    
     for i in count():
         should_continue = False
         update_all()
@@ -276,57 +275,22 @@ def solve(blocks, starters):
             print(f"Took {i} iterations")
             break
         
-        if GUESSING_ENABLED:
-            if grids_same(old_grid):
-                # Find a cell with only two possibilities
-                guess_cell = None
+        if grids_same(old_grid):
+            should_continue = False
+            print("Did not finish, beginning brute force")
+            new_board = [
+                [(grid[y][x]["actual"]) if grid[y][x]["found"] else (0) for x in range(width)] for y in range(height)
+            ]
+            
+            brute_strength_solve.init(blocks, (width, height))
+            result = brute_strength_solve.solve_suguru(new_board)
+            print(f"Solved {result=}")
+            if result:
                 for y in range(height):
                     for x in range(width):
-                        candidate = grid[y][x]
-                        if len(candidate["possible"]) == 2:
-                            guess_cell = (x, y)
-                            break
-                    if guess_cell is not None:
-                        break
-                print(f"Failure, attempting guessing at {guess_cell}")
-                x, y = guess_cell
-                guess_state = copy_grid()
-                grid[y][x]["guess"] = True
-                grid[y][x]["original_possible"] = grid[y][x]["possible"].copy()
-                grid[y][x]["actual"] = grid[y][x]["possible"].pop()
-                grid[y][x]["found"] = grid[y][x]["actual"]
-                grid[y][x]["possible"] = set([grid[y][x]["actual"]])
-                guesses_stack.append({"state": guess_state, "guess_cell": guess_cell, "guessed": grid[y][x]["actual"]})
-        
-        if GUESSING_ENABLED:
-            if len(guesses_stack) > 0:
-                if not check_validity():
-                    # Guess was incorrect
-                    print("Incorrect guess, restoring...")
-                    guess_cell = guesses_stack[-1]["guess_cell"]
-                    guess_state = guesses_stack[-1]["state"]
-                    chosen = guesses_stack[-1]["guessed"]
-                    print(guess_cell)
-                    incorrect_grid = grid
-                    grid = guess_state
-                    grid[guess_cell[1]][guess_cell[0]]["possible"].remove(chosen)
-                    print(grid[guess_cell[1]][guess_cell[0]])
-                    del guesses_stack[-1]
-                    for y in range(height):
-                        for x in range(width):
-                            current = grid[y][x]
-                            col = (100, 100, 100) if current["starter"] else (0, 0, 0)
-                            actual = current["actual"] if current["found"] else ""
-            
-                            for num in range(1, 10):
-                                small_pos = ((x + (num / 12)) * scale, y * scale)
-                                present = (255, 255, 255) if num in grid[y][x]["possible"] else (0, 0, 0)
-                                draw.text(small_pos, str(num), font=small_font, anchor="la", fill=present)
-                            draw.text(cell_pos(x, y), str(actual), font=font, anchor="mm", fill=col)
-                    img.save("sugu.png")
-                    img = original_image.copy()
-                    draw = ImageDraw.Draw(img)
-                    input("...")
+                        grid[y][x]["found"] = True
+                        grid[y][x]["actual"] = new_board[y][x]
+            break
         
         # should_continue = False
         for y in range(height):
@@ -336,7 +300,7 @@ def solve(blocks, starters):
                     continue
         # if has_guessed
         
-        # pprint(grid)
+        # # pprint(grid)
         # for y in range(height):
         #     for x in range(width):
         #         current = grid[y][x]
@@ -349,11 +313,8 @@ def solve(blocks, starters):
         #             draw.text(small_pos, str(num), font=small_font, anchor="la", fill=present)
         #         draw.text(cell_pos(x, y), str(actual), font=font, anchor="mm", fill=col)
         # img.save("sugu.png")
-        # pprint([grid[p[1]][p[0]] for p in get_coords_in_block(5)])
-        # if GUESSING_ENABLED:
-        #     input("\t" * len(guesses_stack) + ">")
-        # else:
-        #     input(">")
+        # # pprint([grid[p[1]][p[0]] for p in get_coords_in_block(5)])
+        # input(">")
         
         old_grid = copy_grid()
         
@@ -370,12 +331,12 @@ def solve(blocks, starters):
 
 if __name__ == '__main__':
     test_blocks = [
-        "112233",
-        "111224",
-        "567724",
-        "566774",
-        "556874",
-        "588884"
+        [1, 1, 2, 2, 3, 3],
+        [1, 1, 1, 2, 2, 4],
+        [5, 6, 7, 7, 2, 4],
+        [5, 6, 6, 7, 7, 4],
+        [5, 5, 6, 8, 7, 4],
+        [5, 8, 8, 8, 8, 4]
     ]
 
     test_starters = { (1, 0):5, (3, 0):3, (1, 2):3, (5, 2):2, (3, 3):2 }
